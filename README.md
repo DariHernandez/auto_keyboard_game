@@ -31,12 +31,15 @@ $ pip install PyAutoGUI
 * **excel_read.py:** module for extact information from xlsx file
 * **web_scraping.py:** module for make the web browser automation
 
-## Run program
-Run file "main.py" from terminal or code editor
+## Run program from terminal
 
+Open a terminal / cmd window 
 Run main.py from terminal: 
 
 ```bash
 $ py C:\proyect_path\main.py
 ```
 
+## Run program .exe
+
+Run as admin the file "main.exe"
