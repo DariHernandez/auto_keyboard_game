@@ -1,6 +1,9 @@
 # auto_keyboard_game
 ## Description
 The program actively searches for an alert on the screen, requesting that the "E" key be pressed. Upon finding it, the program presses the requested key
+
+Note: for the program to work, the pc should only have a monitor connected.
+
 # Requirements
 
 ### Install python 3.7
