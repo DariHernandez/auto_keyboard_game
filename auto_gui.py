@@ -1,6 +1,8 @@
 #! python3
 
-import pyautogui, os
+import pyautogui, os, logging, sys
+
+logging.basicConfig(filename='log.txt', level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s' )
 
 class Auto_gui ():
     """
@@ -12,83 +14,91 @@ class Auto_gui ():
         Constructor of class
         """
 
-        x_initial = 832
-        y_initial = 752
+        # Clean log file
+        file = open("log.txt", 'w')
+        file.write ("")
+        file.close()
 
-        x_final = 833
-        y_final = 792
+        print ('Running program. Press "Ctrl" + "C" to exit.')
 
-        h_min = 47
-        h_max = 51
-        
-        skip_pixels = 2
+        try: 
 
-        print ('Waiting "e" button')
+            self.current_dir = os.path.dirname (__file__)
+
+            self.__delete_last_ss()
+
+            self.screen_values = {
+                "width": 1600, 
+                "height": 900, 
+                "x_initial": 832, 
+                "y_initial": 752, 
+                "x_final": 833, 
+                "y_final": 753,
+            }
+
+            self.__update_screen_values()
+            
+            logging.info(self.screen_values)
+
+            self.skip_pixels = 2
+            self.h_min = 47 
+            self.h_max = 51
+
+            while True: 
+                self.__search_e_button()
+
+        except KeyboardInterrupt:
+            print ("\b\bProgram finished.")
+            sys.exit()
+
+
+
+    def __search_e_button (self): 
+        """
+        Seach alert for press button "E" and send "E" with the keyboard
+        """
+
+        print ('\tWaiting "e" button')
 
         # Infinite llop for found pixel
         while True: 
 
             # Loop for "Y" range of pixels
-            for y in range(int(y_initial), int(y_final), skip_pixels): 
+            for y in range(int(self.screen_values["y_initial"]), int( self.screen_values["y_final"]), self.skip_pixels): 
 
                 # Loop for "X" range of pixels
-                for x in range (int(x_initial), int(x_final), skip_pixels):
+                for x in range (int(self.screen_values["x_initial"]), int( self.screen_values["x_final"]), self.skip_pixels):
                     im = pyautogui.screenshot()
                     pixel = im.getpixel((x, y))
                     pixel_r = pixel[0]
                     pixel_g = pixel[1]
                     pixel_b = pixel[2]
                     pixel_hsv = self.__rgb_to_hsv(pixel_r, pixel_g, pixel_b)
-                    print (pixel_hsv[0]) 
-                    if h_min < pixel_hsv[0] < h_max: 
-                        print ("Element found.")
-                        print (x, y)
+                    logging.info ("pixel_hsv: {}".format(pixel_hsv)) 
+                    if self.h_min < pixel_hsv[0] < self.h_max: 
+                        print ('\tElement found. Sending key "E"')
+                        pyautogui.press ('E')
+                        return None
 
+
+
+    def __update_screen_values (self): 
+        """
+        Return a updated dictionary with the correct values of the program
+        for the current screen size
+        """
+
+        for key, value in self.screen_values.items(): 
+
+            current_width = pyautogui.size()[0]
+            current_height = pyautogui.size()[1]
+
+            if str(key).startswith("x"): 
+                self.screen_values[key] = current_width * value / self.screen_values["width"]
+            elif str(key).startswith("y"):
+                self.screen_values[key] = current_height * value / self.screen_values["height"]
         
-
-        # self.current_dir = os.path.dirname (__file__)
-        # self.__delete_last_ss()
-
-        # yellow_bar_pos = self.__get_yellow_bar()
-        # # e_button = self.__get_button_e (yellow_bar_pos)
-
-        # e_button = [yellow_bar_pos[0] + 50, yellow_bar_pos[1]]
         
-        # print (e_button[0], e_button[1])
-        
-
-    def __get_button_e (self, yellow_bar_pos):
-        """
-        Get the position and color of button E
-        """
-
-        print ('Searching "e" button...')
-
-        x_initial = yellow_bar_pos[0]
-        x_final = yellow_bar_pos[0] + 1000
-        y_initial = yellow_bar_pos[1]
-        y_final = yellow_bar_pos[1] + 1
-
-        match_pixel = self.__compare_pixel_hsv (x_initial, x_final, y_initial, y_final, skip_pixels=2, h_min=226, h_max=230)
-        return match_pixel
-
-    def __get_yellow_bar (self): 
-        """
-        Search the control yellow bar in the screen
-        """
-
-        print ("Searching yellow bar...")
-
-        width = pyautogui.size().width
-        height = pyautogui.size().height
-    
-        y_initial = height*.8
-        y_final = height
-        x_initial = width*.3
-        x_final = width*.7
-
-        match_pixel = self.__compare_pixel_hsv (x_initial, x_final, y_initial, y_final, skip_pixels=10, h_min=47, h_max=51)
-        return match_pixel
 
     def __delete_last_ss (self): 
         """
@@ -100,30 +110,6 @@ class Auto_gui ():
                 file_path = os.path.join (self.current_dir, file)
                 os.remove (file_path)
     
-    def __compare_pixel_hsv (self, x_initial, x_final, y_initial, y_final, skip_pixels, h_min, h_max):
-        """
-        Compare a specific range of pixels with range of "h" in the color hsv. 
-        Return the cordenate of the match pixel
-        """
-
-        # Infinite llop for found pixel
-        while True: 
-
-            # Loop for "Y" range of pixels
-            for y in range(int(y_final), int(y_initial), skip_pixels): 
-
-                # Loop for "X" range of pixels
-                for x in range (int(x_initial), int(x_final), skip_pixels):
-                    im = pyautogui.screenshot()
-                    pixel = im.getpixel((x, y))
-                    pixel_r = pixel[0]
-                    pixel_g = pixel[1]
-                    pixel_b = pixel[2]
-                    pixel_hsv = self.__rgb_to_hsv(pixel_r, pixel_g, pixel_b)
-                    if h_min < pixel_hsv[0] < h_max: 
-                        print ("Element found.")
-                        return x, y
-
 
     def __rgb_to_hsv(self, r, g, b):
         r, g, b = r/255.0, g/255.0, b/255.0
